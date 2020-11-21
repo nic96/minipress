@@ -9,9 +9,9 @@ create table if not exists users
     gravatar_id         text        null constraint gravatar_id_length check ( char_length(gravatar_id) <= 255 ),
     github_id           bigint      null unique,
     github_token        text        null constraint github_token_length check ( char_length(github_token) <= 255 ),
-    role                smallint    not null default 5,
+    role                smallint    not null default 6,
     created_at          timestamp   not null default now(),
     updated_at          timestamp   not null default now()
 );
 create index on users(created_at);
-comment on column users.role is '1 - Super Admin, 2 - Admin, 3 - Editor, 4 - Author, 5 - Contributor, 5 - Subscriber';
+comment on column users.role is '1 - Super Admin, 2 - Admin, 3 - Editor, 4 - Author, 5 - Contributor, 6 - Subscriber';
