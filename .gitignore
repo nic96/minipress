@@ -1,0 +1,5 @@
+/target
+/.idea/
+/.env
+/cert.pem
+/key.pem
