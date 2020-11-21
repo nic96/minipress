@@ -11,9 +11,13 @@ use crate::handlers::init;
 use crate::models::User;
 use actix_identity::{CookieIdentityPolicy, Identity, IdentityService};
 use actix_session::CookieSession;
+use actix_web::middleware::Logger;
 use actix_web::{get, App, HttpResponse, HttpServer};
 use dotenv::dotenv;
+use log::LevelFilter;
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
+use simple_logger::SimpleLogger;
+use std::str::FromStr;
 use time::Duration;
 
 #[get("/")]
@@ -51,6 +55,20 @@ fn index(id: Identity) -> HttpResponse {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
+    match SimpleLogger::new()
+        .with_level(
+            LevelFilter::from_str(
+                dotenv::var("LOG_LEVEL")
+                    .unwrap_or_else(|_| "INFO".to_string())
+                    .as_str(),
+            )
+            .unwrap(),
+        )
+        .init()
+    {
+        Ok(_) => {}
+        Err(e) => eprintln!("Failed to setup logger: {}", e),
+    }
 
     // load ssl keys
     // to create a self-signed temporary cert for testing:
@@ -73,6 +91,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
+            .wrap(Logger::default())
             .data(db_pool.clone())
             .wrap(IdentityService::new(
                 CookieIdentityPolicy::new(dotenv::var("SECRET_KEY").unwrap().as_ref())
