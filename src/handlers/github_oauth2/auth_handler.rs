@@ -1,5 +1,5 @@
 use actix_identity::Identity;
-use actix_web::{dev::Payload, get, web, Error, FromRequest, HttpRequest, HttpResponse};
+use actix_web::{dev::Payload, web, Error, FromRequest, HttpRequest, HttpResponse};
 use futures::future::{err, ok, Ready};
 use oauth2::http::{HeaderMap, HeaderValue, Method};
 use oauth2::reqwest::http_client;
@@ -78,7 +78,6 @@ pub struct GithubUserInfo {
     pub updated_at: PrimitiveDateTime,
 }
 
-#[get("/auth")]
 pub async fn auth(
     id: Identity,
     data: web::Data<GithubOauth2State>,

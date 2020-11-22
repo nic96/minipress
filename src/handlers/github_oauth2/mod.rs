@@ -20,14 +20,23 @@ pub fn github_oauth2_config(cfg: &mut web::ServiceConfig) {
         dotenv::var("GITHUB_CLIENT_SECRET")
             .expect("Failed to get the GITHUB_CLIENT_SECRET .env variable."),
     );
-    let oauth_server =
-        dotenv::var("GITHUB_OAUTH2_SERVER").expect("Failed to get the GITHUB_OAUTH2_SERVER .env");
-    let auth_url = AuthUrl::new(format!("https://{}/oauth/authorize", oauth_server))
-        .expect("Invalid authorization endpoint URL");
-    let token_url = TokenUrl::new(format!("https://{}/oauth/access_token", oauth_server))
-        .expect("Invalid token endpoint URL");
+    let auth_url =
+        dotenv::var("GITHUB_AUTH_URL").expect("Failed to get the GITHUB_AUTH_URL .env variable");
+    let auth_url = AuthUrl::new(auth_url).expect("Invalid authorization endpoint URL");
+    let token_url =
+        dotenv::var("GITHUB_TOKEN_URL").expect("Failed to get the GITHUB_TOKEN_URL .env variable");
+    let token_url = TokenUrl::new(token_url).expect("Invalid token endpoint URL");
     let api_base_url =
         dotenv::var("GITHUB_API_URL").expect("Failed to get the GITHUB_API_URL .env variable");
+
+    // Basic validation of callback url. Url needs to start with a slash and have at least one character after.
+    let callback_url = dotenv::var("GITHUB_CALLBACK_URL").unwrap();
+    if !callback_url.starts_with('/') {
+        panic!("Invalid callback url. Callback url needs to start with a /");
+    }
+    if callback_url.len() <= 2 {
+        panic!("Callback url not valid");
+    }
 
     // Set up the config for the OAuth2 process.
     let client = BasicClient::new(
@@ -38,8 +47,9 @@ pub fn github_oauth2_config(cfg: &mut web::ServiceConfig) {
     )
     .set_redirect_url(
         RedirectUrl::new(format!(
-            "https://{}/github_oauth2/auth", // TODO store the callback url in the .env
-            dotenv::var("APP_URL").unwrap()
+            "https://{}{}",
+            dotenv::var("APP_URL").unwrap(),
+            callback_url,
         ))
         .expect("Invalid redirect URL"),
     );
@@ -48,10 +58,6 @@ pub fn github_oauth2_config(cfg: &mut web::ServiceConfig) {
         oauth: client,
         api_base_url,
     });
-    cfg.service(
-        web::scope("/github_oauth2")
-            .service(login)
-            .service(logout)
-            .service(auth),
-    );
+    cfg.route(callback_url.as_str(), web::get().to(auth));
+    cfg.service(web::scope("/github_oauth2").service(login).service(logout));
 }
