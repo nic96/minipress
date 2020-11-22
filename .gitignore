@@ -3,3 +3,5 @@
 /.env
 /cert.pem
 /key.pem
+/static/css/styles.css
+/static/css/styles.min.css
