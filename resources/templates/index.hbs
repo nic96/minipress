@@ -1,0 +1,12 @@
+{{#> layouts/app_layout }}
+{{#*inline "page"}}
+    <p>{{#if user_name}}{{user_name}}{{/if}}</p>
+    <p>
+        {{#if user_name}}
+            <a href="/github_oauth2/logout">logout</a>
+        {{else}}
+            <a href="/github_oauth2/login">login</a>
+        {{/if}}
+    </p>
+{{/inline}}
+{{/layouts/app_layout}}

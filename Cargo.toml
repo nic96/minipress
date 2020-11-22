@@ -9,12 +9,14 @@ edition = "2018"
 [dependencies]
 actix-service = "1.0"
 actix-session = "0.4"
+actix-http = "2.1"
 actix-identity = "0.3"
 actix-web = { version = "3", features = ["openssl"] }
 anyhow = "1.0"
 time = { version = "0.2", features = ["serde"] }
 dotenv = "0.15"
 futures = "0.3"
+handlebars = { version = "3.5", features = ["dir_source"] }
 log = "0.4"
 oauth2 = "3.0"
 openssl = { version="0.10" }

@@ -1,6 +1,8 @@
 mod database;
 mod handlers;
+mod middleware;
 pub mod models;
+mod template_helpers;
 
 #[macro_use]
 extern crate serde_derive;
@@ -12,16 +14,18 @@ use crate::models::User;
 use actix_identity::{CookieIdentityPolicy, Identity, IdentityService};
 use actix_session::CookieSession;
 use actix_web::middleware::Logger;
-use actix_web::{get, App, HttpResponse, HttpServer};
+use actix_web::{get, web, App, HttpResponse, HttpServer};
 use dotenv::dotenv;
+use handlebars::Handlebars;
 use log::LevelFilter;
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
+use serde_json::json;
 use simple_logger::SimpleLogger;
 use std::str::FromStr;
 use time::Duration;
 
 #[get("/")]
-fn index(id: Identity) -> HttpResponse {
+fn index(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     let logged_user = match id.identity() {
         None => None,
         Some(identity) => match serde_json::from_str::<User>(&*identity) {
@@ -29,27 +33,18 @@ fn index(id: Identity) -> HttpResponse {
             Err(_) => None,
         },
     };
-    let link = if logged_user.is_some() {
-        "logout"
-    } else {
-        "login"
-    };
     let user_name = match logged_user {
         Some(u) => u.username,
         None => "".to_string(),
     };
 
-    let html = format!(
-        r#"<html>
-        <head><title>OAuth2 Test</title></head>
-        <body>
-            {} <a href="/github_oauth2/{}">{}</a>
-        </body>
-    </html>"#,
-        user_name, link, link
-    );
+    let data = json!({
+        "name": "Handlebars",
+        "user_name": user_name,
+    });
+    let body = hb.render("index", &data).unwrap();
 
-    HttpResponse::Ok().body(html)
+    HttpResponse::Ok().body(body)
 }
 
 #[actix_web::main]
@@ -89,10 +84,21 @@ async fn main() -> std::io::Result<()> {
 
     let db_pool = setup_database_pool().await;
 
+    let mut handlebars = Handlebars::new();
+    template_helpers::register_helpers(&mut handlebars);
+    // in the future could probably try dynamic template directories to make things more customizable
+    // maybe store a temple directory path in the database.
+    handlebars
+        .register_templates_directory(".hbs", "resources/templates")
+        .unwrap();
+    let handlebars_ref = web::Data::new(handlebars);
+
     HttpServer::new(move || {
         App::new()
+            .wrap(middleware::error_handlers())
             .wrap(Logger::default())
             .data(db_pool.clone())
+            .app_data(handlebars_ref.clone())
             .wrap(IdentityService::new(
                 CookieIdentityPolicy::new(dotenv::var("SECRET_KEY").unwrap().as_ref())
                     .name("auth")
