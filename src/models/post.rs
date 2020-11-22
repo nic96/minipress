@@ -71,7 +71,7 @@ impl Post {
             ",
             id
         )
-        .fetch_one(&*pool)
+        .fetch_one(pool)
         .await?;
 
         Ok(post)
@@ -86,7 +86,6 @@ impl Post {
             .take(55)
             .collect::<Vec<&str>>()
             .join(" ");
-        let mut tx = pool.begin().await?;
         let post = sqlx::query_as!(
             Post,
             "INSERT INTO posts (user_id, title, slug, excerpt, content) VALUES ($1, $2, $3, $4, $5) RETURNING *",
@@ -96,15 +95,13 @@ impl Post {
             excerpt,
             post.content,
         )
-        .fetch_one(&mut tx)
+        .fetch_one(pool)
         .await?;
 
-        tx.commit().await?;
         Ok(post)
     }
 
     pub async fn update(id: Uuid, post: PostRequest, pool: &DbPool) -> Result<Post> {
-        let mut tx = pool.begin().await.unwrap();
         // we won't update the slug automatically in case others have linked to it
         // maybe in the future we'll have an option to explicitly change the slug
         // take the first 55 words as the excerpt.
@@ -124,21 +121,18 @@ impl Post {
             excerpt,
             id,
         )
-        .fetch_one(&mut tx)
+        .fetch_one(pool)
         .await?;
 
-        tx.commit().await.unwrap();
         Ok(post)
     }
 
     pub async fn delete(id: Uuid, pool: &DbPool) -> Result<u64> {
-        let mut tx = pool.begin().await?;
         let deleted = sqlx::query("DELETE FROM posts WHERE id = $1")
             .bind(id)
-            .execute(&mut tx)
+            .execute(pool)
             .await?;
 
-        tx.commit().await?;
         Ok(deleted.rows_affected())
     }
 }

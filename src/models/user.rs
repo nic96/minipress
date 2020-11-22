@@ -143,7 +143,7 @@ impl User {
             "#,
             id
         )
-        .fetch_one(&*pool)
+        .fetch_one(pool)
         .await?;
 
         Ok(user)
@@ -160,14 +160,13 @@ impl User {
             "#,
             id
         )
-        .fetch_one(&*pool)
+        .fetch_one(pool)
         .await?;
 
         Ok(user)
     }
 
     pub async fn create(user: UserRequest, pool: &DbPool) -> Result<User> {
-        let mut tx = pool.begin().await?;
         let user = sqlx::query_as!(
             User,
             r#"INSERT INTO users (username, email, password, name, avatar_url, gravatar_id, github_id, github_token, role, created_at, updated_at)
@@ -188,15 +187,13 @@ impl User {
             user.created_at,
             user.updated_at,
         )
-        .fetch_one(&mut tx)
+        .fetch_one(pool)
         .await?;
 
-        tx.commit().await?;
         Ok(user)
     }
 
     pub async fn update(id: Uuid, user: UserRequest, pool: &DbPool) -> Result<User> {
-        let mut tx = pool.begin().await.unwrap();
         let user = sqlx::query_as!(
             User,
             r#"
@@ -217,21 +214,18 @@ impl User {
             user.role as i16,
             id,
         )
-            .fetch_one(&mut tx)
+            .fetch_one(pool)
             .await?;
 
-        tx.commit().await.unwrap();
         Ok(user)
     }
 
     pub async fn delete(id: Uuid, pool: &DbPool) -> Result<u64> {
-        let mut tx = pool.begin().await?;
         let deleted = sqlx::query("DELETE FROM users WHERE id = $1")
             .bind(id)
-            .execute(&mut tx)
+            .execute(pool)
             .await?;
 
-        tx.commit().await?;
         Ok(deleted.rows_affected())
     }
 }
