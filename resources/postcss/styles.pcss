@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+    @variants hover, focus {
+        .text-glow {
+            text-shadow: 0 0 2px rgba(200, 200, 200, 0.5);
+        }
+    }
+    .dark .dark\:block {
+        display: block;
+    }
+    .dark .dark\:hidden {
+        display: none;
+    }
+}

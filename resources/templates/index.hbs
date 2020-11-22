@@ -1,5 +1,4 @@
-{{#> layouts/app_layout }}
-{{#*inline "page"}}
+{{#*inline "content"}}
     <p>{{#if user_name}}{{user_name}}{{/if}}</p>
     <p>
         {{#if user_name}}
@@ -9,4 +8,4 @@
         {{/if}}
     </p>
 {{/inline}}
-{{/layouts/app_layout}}
+{{~> layouts/app_layout sub_title="Home" nav_home_active=true ~}}

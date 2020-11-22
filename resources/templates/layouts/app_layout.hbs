@@ -1,11 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
-    <title>{{app_name}} Example</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_name }} - {{ sub_title }}</title>
+
+    <link href="/static/css/styles.css" rel="stylesheet">
+    <script>
+        let default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        let theme;
+        try { theme = localStorage.getItem('minipress-theme'); } catch(e) { }
+        if (theme === null || theme === undefined) { theme = default_theme; }
+        let html = document.querySelector('html');
+        html.classList.remove('dark')
+        html.classList.add(theme);
+    </script>
+
 </head>
 
-<body>
-{{~> page}}
+<body class="flex flex-col items-stretch h-screen">
+    {{> layouts/navbar }}
+    <div class="bg-gray-200 dark:bg-gray-700 flex-grow text-gray-700 dark:text-gray-300">
+        {{~> content }}
+    </div>
 </body>
 </html>

@@ -1,5 +1,6 @@
 use crate::database::DbPool;
 use crate::models::uuid_serializer;
+use actix_identity::Identity;
 use actix_web::{Error, HttpRequest, HttpResponse, Responder};
 use anyhow::Result;
 use futures::future::{ready, Ready};
@@ -97,6 +98,22 @@ pub struct User {
     pub role: Role,
     pub created_at: PrimitiveDateTime,
     pub updated_at: PrimitiveDateTime,
+}
+
+pub trait ToUser {
+    fn user(&self) -> Option<User>;
+}
+
+impl ToUser for Identity {
+    fn user(&self) -> Option<User> {
+        match self.identity() {
+            None => None,
+            Some(identity) => match serde_json::from_str::<User>(&*identity) {
+                Ok(u) => Some(u),
+                Err(_) => None,
+            },
+        }
+    }
 }
 
 // implementation of Actix Responder for User struct so we can return User from action handler

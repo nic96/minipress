@@ -10,42 +10,18 @@ extern crate dotenv;
 
 use crate::database::setup_database_pool;
 use crate::handlers::init;
-use crate::models::User;
-use actix_identity::{CookieIdentityPolicy, Identity, IdentityService};
+use actix_files as fs;
+use actix_identity::{CookieIdentityPolicy, IdentityService};
 use actix_session::CookieSession;
-use actix_web::middleware::Logger;
-use actix_web::{get, web, App, HttpResponse, HttpServer};
+use actix_web::middleware::{Compress, Logger};
+use actix_web::{web, App, HttpServer};
 use dotenv::dotenv;
 use handlebars::Handlebars;
 use log::LevelFilter;
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
-use serde_json::json;
 use simple_logger::SimpleLogger;
 use std::str::FromStr;
 use time::Duration;
-
-#[get("/")]
-fn index(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
-    let logged_user = match id.identity() {
-        None => None,
-        Some(identity) => match serde_json::from_str::<User>(&*identity) {
-            Ok(u) => Some(u),
-            Err(_) => None,
-        },
-    };
-    let user_name = match logged_user {
-        Some(u) => u.username,
-        None => "".to_string(),
-    };
-
-    let data = json!({
-        "name": "Handlebars",
-        "user_name": user_name,
-    });
-    let body = hb.render("index", &data).unwrap();
-
-    HttpResponse::Ok().body(body)
-}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -95,10 +71,11 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
+            // middlewares
             .wrap(middleware::error_handlers())
             .wrap(Logger::default())
-            .data(db_pool.clone())
-            .app_data(handlebars_ref.clone())
+            .wrap(CookieSession::signed(&[0; 32]).secure(true))
+            .wrap(Compress::default())
             .wrap(IdentityService::new(
                 CookieIdentityPolicy::new(dotenv::var("SECRET_KEY").unwrap().as_ref())
                     .name("auth")
@@ -111,11 +88,18 @@ async fn main() -> std::io::Result<()> {
                     .max_age_time(Duration::days(1))
                     .secure(false), // this can only be true if you have https
             ))
-            .wrap(CookieSession::signed(&[0; 32]).secure(true))
-            .service(index)
+            // data
+            .data(db_pool.clone())
+            .app_data(handlebars_ref.clone())
+            // services
+            .service(
+                fs::Files::new("/static", "static")
+                    //.use_etag(true)
+                    //.use_last_modified(true),
+            )
             .configure(init)
     })
-    .keep_alive(75)
+    .keep_alive(0)
     .bind_openssl(dotenv::var("APP_URL").unwrap(), builder)?
     .run()
     .await
