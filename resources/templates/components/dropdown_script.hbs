@@ -1,0 +1,24 @@
+{{! Dropdowns should work without javascript,
+ but this hides dropdowns when any area of the page
+ is clicked that is not a dropdown. Without this
+ script the only way to hide a dropdown is to click
+ the same label (button) that opened it. }}
+<script>
+    let dropdowns = document.querySelectorAll(".dropdown-active");
+    html.addEventListener("click", (e) => {
+        if (e.target.dataset.toggle === "dropdown") {
+            let target_dropdown = e.target.getAttribute('for');
+            target_dropdown = document.getElementById(target_dropdown);
+            dropdowns.forEach((dropdown) => {
+                if (dropdown !== target_dropdown) {
+                    dropdown.checked = false;
+                }
+            });
+        } else {
+            if (e.target.classList.contains("dropdown-active")) {
+                return;
+            }
+            dropdowns.forEach((dropdown) => (dropdown.checked = false));
+        }
+    });
+</script>

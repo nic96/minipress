@@ -1,11 +1,17 @@
 {{#*inline "content"}}
-    <p>{{#if user_name}}{{user_name}}{{/if}}</p>
-    <p>
-        {{#if user_name}}
-            <a href="/github_oauth2/logout">logout</a>
-        {{else}}
-            <a href="/github_oauth2/login">login</a>
-        {{/if}}
-    </p>
+    {{#if user}}
+    <pre>
+        id: {{user.id}}
+        username: {{user.username}}
+        name: {{user.name}}
+        email: {{user.email}}
+        avatar_url: {{user.avatar_url}}
+        gravatar_id: {{user.gravatar_id}}
+        github_id: {{user.github_id}}
+        role: {{user.role}}
+        created_at: {{user.created_at}}
+        updated_at: {{user.updated_at}}
+    </pre>
+    {{/if}}
 {{/inline}}
-{{~> layouts/app_layout sub_title="Home" nav_home_active=true ~}}
+{{~> layouts/app_layout sub_title="Home" ~}}

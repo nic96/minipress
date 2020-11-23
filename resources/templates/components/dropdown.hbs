@@ -1,0 +1,20 @@
+{{!--
+This dropdown works because of the fact that you can toggle
+a checkbox with an html label. There's a css selector in
+`styles.pcss` that hides the dropdown if the input is not checked.
+Here's an example on how to use this dropdown:
+```
+<label data-toggle="dropdown" for="profile_dropdown">Button</label>
+{{#>components/dropdown id="profile_dropdown"}}
+    {{#*inline "dropdown_items"}}
+        ...
+    {{/inline}}
+{{/components/dropdown}}
+```
+--}}
+<input class="hidden dropdown-active" id="{{id}}" type="checkbox" autocomplete="off" />
+<div class="relative flex justify-end text-gray-700 dark:text-gray-200">
+    <div class="absolute flex flex-col w-48 mt-1 bg-gray-100 rounded shadow dark:bg-gray-600 overflow-hidden">
+        {{~>dropdown_items}}
+    </div>
+</div>

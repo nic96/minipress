@@ -67,6 +67,7 @@ async fn main() -> std::io::Result<()> {
     handlebars
         .register_templates_directory(".hbs", "resources/templates")
         .unwrap();
+    handlebars.set_strict_mode(true);
     let handlebars_ref = web::Data::new(handlebars);
 
     HttpServer::new(move || {
