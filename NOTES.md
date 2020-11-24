@@ -8,3 +8,6 @@
 #### Post format
 Post will be written in markdown and parsed using
 `pulldown-cmark` crate.
+
+Try out [SimpleMDE](https://github.com/sparksuite/simplemde-markdown-editor)
+as the editor.
