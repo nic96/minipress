@@ -74,9 +74,69 @@ module.exports = {
     },
     extend: {
       divideColor: ['group-hover'],
+      typography: (theme) => ({
+        DEFAULT: {
+          css: {
+            color: theme('colors.gray.800'),
+
+            a: {
+              color: theme('colors.indigo.600'),
+              'text-decoration': 'none',
+              '&:hover': {
+                color: theme('colors.indigo.800'),
+              },
+            },
+          },
+        },
+
+        dark: {
+          css: {
+            color: theme('colors.gray.300'),
+            a: {
+              color: theme('colors.indigo.400'),
+              'text-decoration': 'none',
+              '&:hover': {
+                color: theme('colors.indigo.300'),
+              },
+            },
+
+            h1: {
+              color: theme('colors.gray.300'),
+            },
+            h2: {
+              color: theme('colors.gray.300'),
+            },
+            h3: {
+              color: theme('colors.gray.300'),
+            },
+            h4: {
+              color: theme('colors.gray.300'),
+            },
+            h5: {
+              color: theme('colors.gray.300'),
+            },
+            h6: {
+              color: theme('colors.gray.300'),
+            },
+
+            strong: {
+              color: theme('colors.gray.300'),
+            },
+
+            code: {
+              color: theme('colors.gray.300'),
+            },
+
+            figcaption: {
+              color: theme('colors.gray.500'),
+            },
+          },
+        },
+      }),
     },
   },
   variants: {
+    typography: ["dark"],
     extend: {},
   },
   plugins: [
