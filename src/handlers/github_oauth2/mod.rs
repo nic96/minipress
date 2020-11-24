@@ -6,6 +6,7 @@ use actix_web::web;
 use oauth2::basic::BasicClient;
 use oauth2::{AuthUrl, ClientId, ClientSecret, RedirectUrl, TokenUrl};
 
+use actix_http::http::Uri;
 use auth_handler::auth;
 pub use auth_handler::GithubUserInfo;
 use login_handler::login;
@@ -30,12 +31,12 @@ pub fn github_oauth2_config(cfg: &mut web::ServiceConfig) {
         dotenv::var("GITHUB_API_URL").expect("Failed to get the GITHUB_API_URL .env variable");
 
     // Basic validation of callback url. Url needs to start with a slash and have at least one character after.
-    let callback_url = dotenv::var("GITHUB_CALLBACK_URL").unwrap();
-    if !callback_url.starts_with('/') {
-        panic!("Invalid callback url. Callback url needs to start with a /");
-    }
-    if callback_url.len() <= 2 {
-        panic!("Callback url not valid");
+    let callback_url = dotenv::var("GITHUB_CALLBACK_URL")
+        .expect("Failed to get the GITHUB_CALLBACK_URL .env variable")
+        .parse::<Uri>()
+        .expect("Invalid GITHUB_CALLBACK_URL");
+    if callback_url.path().len() <= 2 {
+        panic!("Callback url not valid. Path is not long enough.");
     }
 
     // Set up the config for the OAuth2 process.
@@ -45,19 +46,12 @@ pub fn github_oauth2_config(cfg: &mut web::ServiceConfig) {
         auth_url,
         Some(token_url),
     )
-    .set_redirect_url(
-        RedirectUrl::new(format!(
-            "https://{}{}",
-            dotenv::var("APP_URL").unwrap(),
-            callback_url,
-        ))
-        .expect("Invalid redirect URL"),
-    );
+    .set_redirect_url(RedirectUrl::new(callback_url.to_string()).expect("Invalid callback URL"));
 
     cfg.data(GithubOauth2State {
         oauth: client,
         api_base_url,
     });
-    cfg.route(callback_url.as_str(), web::get().to(auth));
+    cfg.route(callback_url.path(), web::get().to(auth));
     cfg.service(web::scope("/github_oauth2").service(login).service(logout));
 }
