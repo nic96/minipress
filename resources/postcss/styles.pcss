@@ -20,16 +20,20 @@
     @apply text-gray-700 dark:text-gray-400 font-bold
     inline-flex items-center px-4
     hover:text-gray-500 dark:hover:text-gray-300
-    hover:text-glow;
+    hover:text-glow h-12;
 }
 
 .nav-link-indigo {
     @apply text-indigo-800 dark:text-indigo-400 font-bold
     inline-flex items-center px-4
     hover:text-indigo-600 dark:hover:text-indigo-300
-    hover:text-glow;
+    hover:text-glow h-12;
 }
 
 .dropdown-active:not(:checked) + div {
     display: none;
+}
+
+#show_nav:not(:checked) + div {
+    @apply transform-gpu -translate-x-64;
 }

@@ -87,7 +87,7 @@ async fn main() -> std::io::Result<()> {
                             .as_str(),
                     )
                     .max_age_time(Duration::days(1))
-                    .secure(false), // this can only be true if you have https
+                    .secure(true), // this can only be true if you have https
             ))
             // data
             .data(db_pool.clone())
