@@ -16,7 +16,7 @@ pub fn error_handlers() -> ErrorHandlers<Body> {
         .handler(StatusCode::INTERNAL_SERVER_ERROR, internal_server_error)
 }
 
-// Error handler for a 404 Page not found error.
+// Error handler for a 500 internal server error.
 fn internal_server_error<B>(res: ServiceResponse<B>) -> Result<ErrorHandlerResponse<B>> {
     let response = get_error_response(&res, "Internal server error.", "Internal error");
     Ok(ErrorHandlerResponse::Response(
